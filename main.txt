@@ -1,0 +1,55 @@
+// This is an comment
+
+branch Main{
+    
+    // Def project specs
+    project sOS {
+        //arch _[archtype];
+        // archtype can be : i386 or x86_64;
+        //out '[filename].bin';
+        //Exemples :
+        arch _x86_64;
+        out 'main.bin';
+    }
+
+    // Def objects (files) of the OS
+    cat objects {
+        //[object_type] [object_name] = '/link/to/the/file';
+        // Object_type : asm, c, rs, ld, java, cp (C++), cs (C#)
+        // Exemples :
+        asm boot = '/home/gabrielrebillat/Downloads/sOS-main/os/boot.asm'; // Bootloader
+        c kernel = '/home/gabrielrebillat/Downloads/sOS-main/os/kernel.c'; // Kernel C
+        c util =c '/home/gabrielrebillat/Downloads/sOS-main/os/util.c'; // Util C
+        rs math_rs = '/home/gabrielrebillat/Downloads/sOS-main/rust/maths.rs'; // Maths Rust
+        ld linker = /home/gabrielrebillat/Downloads/sOS-main/os/linker.ld'; // Linker Ld
+    }
+
+    // Compile objects
+    forge compile {
+        [object_name].compile([file_type_out], [arg]);
+        //file_type_out : o, elf... ; arg : boot, no_std, panic
+
+        //Exemples :
+        boot.compile(o, boot);
+        kernel.compile(o, no_std);
+        util.compile(o, no_std);
+        math_rs.compile(o, no_std, panic);
+    }
+
+    // Link linker.ld
+    forge link {
+        ld([ld_object_name], binary_type);
+        //binary_type : elf_i386...
+        //Exemples :
+        ld(linker, elf_i386); // Out : main.elf
+        trans(bin);
+    }
+
+    // Run with qemu
+    forge run {
+        qemu([arg], bin);
+        // arg : i386... ; bin : file.bin (main.bin)
+        // Exemple : 
+        qemu(i386, bin);
+    }
+}

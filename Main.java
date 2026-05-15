@@ -482,7 +482,7 @@ public class Main {
     					
     					System.out.print("\nrustc " + "--emit=obj " + "-C " + "panic=abort " + "-C " 
     					+ "opt-level=3 " + "-C " + "overflow-checks=off " + "--target " + "i686-unknown-linux-gnu " 
-    							+ rust_objects_paths.get(f) + " -o " + rust_objects_names.get(f) + ".o");
+    							+ rust_objects_paths.get(u) + " -o " + rust_objects_names.get(u) + ".o");
     					
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);

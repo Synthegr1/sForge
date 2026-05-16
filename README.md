@@ -36,7 +36,7 @@ sForge est composés de 5 grandes **parties essentielles** au bon fonctionnement
         //Exemple :
         arch _x86_32;
         osdev = true;
-        out 'main.bin';
+        out 'main';
         
     }
 
@@ -56,5 +56,32 @@ sForge est composés de 5 grandes **parties essentielles** au bon fonctionnement
     }
 
   ### Compile
-  A partir de maintenant, les catégories suivantes seront définies par le même mot clef : **forge**. La catégorie compile permet de compiler (pas linker !) les différents objets (c, rust...) en éléments '.o' avant le linkage. Il est possible d'appliquer la fonction *.compile()* pour
-  
+  A partir de maintenant, les catégories suivantes seront définies par le même mot clef : **forge**. La catégorie compile permet de compiler (pas linker !) les différents objets (c, rust...) en éléments '.o' avant le linkage. Il est possible d'appliquer la fonction *.compile()* pour effectuer cette tâche. *.compile()* prend deux à trois arguments en fonction du type de l'objet. Pour des objects de type *asm* ou *c* et *rs*, elle ne prend que deux arguments : le type de fichier en sortie (par exemple *o* pour une sortie en '.o') et, pour le C et le Rust les informations sur les bibliotheques standard (compilation avec ou sans les std), pour l'asm si c'est un fichier de boot ou autre (avec les mots-clefs *boot* et *other*). /!\ Pour les fichiers rust, ils seront nécéssairement compiler en panic si osdev = true et tous les éléments dans l'architecture indiqué au début du programme (par exemple, *arch* est égal à *i386*, alors, ils seront compiler (avec gcc) en *-m32*).
+
+    forge compile {
+
+        [nom de l'objet].compile([arg 1], [arg 2]);
+        
+        // Exemple :
+        kernel.compile(o, no_std);
+        autre_noms.compile(o, no_std);
+        boot.compile(o, boot);
+        
+    }
+
+  ### Link
+  C'est la partie où le ld prendra son utilité. Ici, deux fonctions sont disponibles : *ld()* et *trans()*. *ld()* prend un argument : le nom de l'objet qui pointe vers le fichier .ld, ici l'objet *linker*. Le format de la sortie sera déduis en fonction de l'*arch* définit en haut du programme (par exemple : si *arch* est = à *i386*, alors, le ld aura en sortie un fichier *elf_i386*. Pour la fonction *trans()*, elle permet de convertir un fichier (en fonction de l'out de *ld()*) en un fichier d'un autre type (présisé en argument de la fonction *trans()*). Ce fichier sorti sera la version final, prêt à l'execution de votre OS. Il aura comme nom celui définit dans le *out* dans la section project, par exemple ici 'main.bin'.
+
+    forge link {
+
+        ld([nom de l'objet ld]);
+        trans([type de sortie final);
+
+        // Exemple :
+        ld(linker);
+        trans(bin);
+        
+    }
+
+  ### Run
+  C'est la partie où nous allons pouvoir executer tous notre os avec une fonction disponible : *qemu()*

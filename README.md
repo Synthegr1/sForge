@@ -84,4 +84,14 @@ sForge est composés de 5 grandes **parties essentielles** au bon fonctionnement
     }
 
   ### Run
-  C'est la partie où nous allons pouvoir executer tous notre os avec une fonction disponible : *qemu()*
+  C'est la partie où nous allons pouvoir executer tous notre os avec une fonction disponible : *qemu()* qui ne prend... aucun arguments. Elle va commiler tout de suite le fichier de sortie du *trans()*.
+
+    forge run {
+
+      qemu();
+
+    }
+
+## Environnemment nécéssaire :
+Java
+## Bonne pratique !

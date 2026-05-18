@@ -25,6 +25,7 @@ public class Main {
 	static String arch;
 	static String archtype;
 	static String arch_type_asm;
+	static String arch_type_ld;
 	static String out_name;
 	
 	//Objects Data
@@ -38,6 +39,10 @@ public class Main {
 	static ArrayList<String> rust_objects_paths = new ArrayList<String>();
 	static ArrayList<String> ld_objects_paths = new ArrayList<String>();
    
+	static ArrayList<String> c_objects_names_o = new ArrayList<String>();
+	static ArrayList<String> asm_objects_names_o = new ArrayList<String>();
+	static ArrayList<String> rust_objects_names_o = new ArrayList<String>();
+	
     static File in = new File("main.forge");
     
     
@@ -52,6 +57,8 @@ public class Main {
     static boolean project_analised = false;
     static boolean obj_analised = false;
     static boolean comp_analised = false;
+    static boolean link_analised = false;
+    static boolean run_analised = false;
     
     static boolean project_session = true;
     static boolean objects_session = true;
@@ -89,6 +96,12 @@ public class Main {
     						}
     						if(!comp_analised) {
     							comp_analyse();
+    						}
+    						if(!link_analised) {
+    							link_analyse();
+    						}
+    						if(!run_analised) {
+    							run_analyse();
     						}
     					}
     				} else {
@@ -267,8 +280,6 @@ public class Main {
 						}
 					}
     				
-    				
-    				
     			}
     		}
     	}catch(FileNotFoundException e) {
@@ -295,6 +306,7 @@ public class Main {
         		} else if(arch.equals("i386")) {
         			archtype = "-m32";
         			arch_type_asm = "elf32";
+        			arch_type_ld = "elf_i386";
         		}
         	}else if(instruction.startsWith("out")) {
         		out_name = instruction.substring(instruction.indexOf("\'") + 1, instruction.lastIndexOf("\'"));
@@ -353,7 +365,7 @@ public class Main {
     		}
     	}
     	
-    	System.out.println();
+    	/*System.out.println();
     	System.out.print("Objects : \n");
     	System.out.print(YELLOW + "C" + RESET + " : ");
     	System.out.print(BLUE + c_objects_names + RESET + "\n");
@@ -369,7 +381,7 @@ public class Main {
     	
     	System.out.print(YELLOW + "Ld" + RESET + " : ");
     	System.out.print(BLUE + ld_objects_names + RESET + "\n");
-    	System.out.print(BLUE + ld_objects_paths + RESET + "\n");
+    	System.out.print(BLUE + ld_objects_paths + RESET + "\n");*/
     	
     	obj_analised = true;
     }
@@ -381,7 +393,12 @@ public class Main {
     	
     	System.out.println();
     	
+		boolean c_verif = false;
+		boolean asm_verif = false;
+		boolean rs_verif = false;
+    	
     	for(String g : all_commands) {
+    		
     		if(g.equals("}")){
     			break;
     		}
@@ -415,7 +432,10 @@ public class Main {
     						System.out.print(" -nostdlib");
     					}
     					System.out.print(" -c " + c_objects_paths.get(p) + " -o ");
-    					System.out.print(c_objects_names.get(p) + ".o\n");
+    					System.out.print(c_objects_names.get(p) + "." + out + "\n");
+    					
+    					c_objects_names_o.add(c_objects_names.get(p) + "." + out);
+    					c_verif = true;
     					
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
@@ -442,6 +462,10 @@ public class Main {
     					
     					System.out.print("\nnasm -f " + arch_type_asm + " " + asm_objects_paths.get(y));
     					System.out.print(" -o " + asm_objects_names.get(y) + "." + out + "\n");
+    					
+    					asm_objects_names_o.add(asm_objects_names.get(y) + "." + out);
+    					asm_verif = true;
+
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
     					System.out.print(YELLOW + func + RESET);
@@ -482,7 +506,10 @@ public class Main {
     					
     					System.out.print("\nrustc " + "--emit=obj " + "-C " + "panic=abort " + "-C " 
     					+ "opt-level=3 " + "-C " + "overflow-checks=off " + "--target " + "i686-unknown-linux-gnu " 
-    							+ rust_objects_paths.get(u) + " -o " + rust_objects_names.get(u) + ".o");
+    							+ rust_objects_paths.get(u) + " -o " + rust_objects_names.get(u) + "." + out + "\n");
+    					
+    					rust_objects_names_o.add(rust_objects_names.get(u) + "." + out);
+    					rs_verif = true;
     					
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
@@ -493,15 +520,76 @@ public class Main {
     				f += 1;
     				obj_verif.add("true");
     			}
-    		}
-    		
-    		if(f == 0) {
-    			obj_verif.add("false");
-    		}
+    		}		
+
     		f = 0;
     		
     	}
     	
     	comp_analised = true;
+    }
+    
+    static void link_analyse() {
+    	String instr = link.substring(link.indexOf("{") + 1, link.lastIndexOf("}") - 1);
+    	instr = instr.strip();
+    	String[] all_instrs = instr.split(";");
+    	
+    	for(String joan : all_instrs) {
+    		joan = joan.strip();
+    		
+    		if(joan.startsWith("ld")) {
+    			String args = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));	
+    			
+    			System.out.print("\nld -m " + arch_type_ld + " -T ");
+    			System.out.print(ld_objects_paths.get(0) + " ");
+    			
+    			for(int x = 0; x < asm_objects_names_o.size(); x++) {
+    				System.out.print(asm_objects_names_o.get(x) + " ");
+    			}
+    			for(int x = 0; x < c_objects_names_o.size(); x++) {
+    				System.out.print(c_objects_names_o.get(x) + " ");
+    			}
+    			for(int x = 0; x < rust_objects_names_o.size(); x++) {
+    				System.out.print(rust_objects_names_o.get(x) + " ");
+    			}
+    			System.out.println("-o " + out_name + ".elf");
+    			
+    			
+    		}else if(joan.startsWith("trans")) {
+    			String out_type = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));
+    			out_type = out_type.strip();
+    			String m = "";
+    			
+    			if(out_type.equals("bin")) {
+    				m = "binary";
+    			}
+    			
+    			System.out.print("\nobjcopy -O " + m + " " + out_name + ".elf ");
+    			System.out.print(out_name + "." + out_type);
+    			
+    		} else {
+    			System.out.println(RED + "sForge Error : unknow function here ->" + YELLOW + joan.strip() + RED + "<-" + RESET);
+    		}
+    	}
+    	
+    	link_analised = true;	
+    }
+    
+    static void run_analyse() {
+    	String instr = run.substring(run.indexOf("{") + 1, run.lastIndexOf("}") - 1);
+    	instr = instr.strip();
+    	String[] all_instrs = instr.split(";");
+    	
+    	for(String r : all_instrs) {
+    		r = r.strip();
+    		System.out.println(r);
+    		
+    		if(r.startsWith("qemu")) {
+    			System.out.println("gkduygekugd");
+    		}
+    	}
+    	
+    	
+    	run_analised = true;
     }
 }

@@ -10,6 +10,7 @@ branch Main{
         //Exemples :
         arch _x86_64;
         out 'main.bin';
+        osdev = true;
     }
 
     // Def objects (files) of the OS
@@ -26,7 +27,7 @@ branch Main{
 
     // Compile objects
     forge compile {
-        [object_name].compile([file_type_out], [arg]);
+        //[object_name].compile([file_type_out], [arg]);
         //file_type_out : o, elf... ; arg : boot, no_std, panic
 
         //Exemples :
@@ -38,18 +39,18 @@ branch Main{
 
     // Link linker.ld
     forge link {
-        ld([ld_object_name], binary_type);
+        //ld([ld_object_name], binary_type);
         //binary_type : elf_i386...
         //Exemples :
-        ld(linker, elf_i386); // Out : main.elf
+        ld(linker); // Out : main.elf
         trans(bin);
     }
 
     // Run with qemu
     forge run {
-        qemu([arg], bin);
+        //qemu([arg], bin);
         // arg : i386... ; bin : file.bin (main.bin)
         // Exemple : 
-        qemu(i386, bin);
+        qemu();
     }
 }

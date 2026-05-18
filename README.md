@@ -25,7 +25,8 @@ sForge est composés de 5 grandes **parties essentielles** au bon fonctionnement
   
   ### Project
   Cette partie est essentielle pour connaître les spécifications du projet : nom du projet, architecture de compilation (x86_32...) et si le langage est utilisé dans le cadre d'OsDev.
-  Trois éléments doivent impérativement être présents dans la catégorie projet : le *nom*, *l'architecture* et la variable de type boolean *osdev*.
+  Trois éléments doivent impérativement être présents dans la catégorie projet : le *nom*, *l'architecture* et la variable de type boolean *osdev*.<br>
+  Il existe dans sForge 2 architectures possibles : en 64 bits **x86_32** et en 32 bits **i386**.
 
     project myOs {
     

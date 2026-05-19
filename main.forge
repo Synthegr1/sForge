@@ -8,8 +8,8 @@ branch Main{
         // archtype can be : i386 or x86_64;
         //out '[filename].bin';
         //Exemples :
-        arch _x86_64;
-        out 'main.bin';
+        arch _i386;
+        out 'main';
         osdev = true;
     }
 
@@ -18,11 +18,11 @@ branch Main{
         //[object_type] [object_name] = '/link/to/the/file';
         // Object_type : asm, c, rs, ld, java, cp (C++), cs (C#)
         // Exemples :
-        asm boot = '/home/gabrielrebillat/Downloads/sOS-main/os/boot.asm'; // Bootloader
-        c kernel = '/home/gabrielrebillat/Downloads/sOS-main/os/kernel.c'; // Kernel C
-        c util =c '/home/gabrielrebillat/Downloads/sOS-main/os/util.c'; // Util C
-        rs math_rs = '/home/gabrielrebillat/Downloads/sOS-main/rust/maths.rs'; // Maths Rust
-        ld linker = /home/gabrielrebillat/Downloads/sOS-main/os/linker.ld'; // Linker Ld
+        asm boot = '/home/gabrielrebillat/Downloads/sOS-main/os/boot.asm';
+        c kernel = '/home/gabrielrebillat/Downloads/sOS-main/os/kernel.c';
+        c util =c '/home/gabrielrebillat/Downloads/sOS-main/os/util.c';
+        rs math_rs = '/home/gabrielrebillat/Downloads/sOS-main/rust/maths.rs';
+        ld linker = '/home/gabrielrebillat/Downloads/sOS-main/os/linker.ld'; 
     }
 
     // Compile objects
@@ -42,7 +42,7 @@ branch Main{
         //ld([ld_object_name], binary_type);
         //binary_type : elf_i386...
         //Exemples :
-        ld(linker); // Out : main.elf
+        ld(linker); 
         trans(bin);
     }
 

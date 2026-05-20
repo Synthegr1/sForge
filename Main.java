@@ -338,6 +338,7 @@ public class Main {
         		}
         	} else {
         		System.out.println(RED + "sForge Error : unknow element : -" + YELLOW + instruction + RED + "-" + RESET);
+        		System.exit(0);
         	}
     	}
     	
@@ -379,6 +380,7 @@ public class Main {
         			ld_objects_paths.add(path);
         		}else{
             		System.out.println(RED + "Forge Error : Object type -" + RESET + YELLOW + objet.split(" ")[0] + RESET + RED + "- unknow" + RESET);
+            		System.exit(0);
         		}
     		}
     	}
@@ -423,9 +425,60 @@ public class Main {
     		
     		try {
     			obj = g.substring(0, g.lastIndexOf("."));
-    			func = g.substring(g.indexOf(".") + 1, g.lastIndexOf(")") + 1);
+    			obj = obj.strip();
+    			
+    			boolean existed = false;
+    			for(int x = 0; x < c_objects_names.size(); x++) {
+    				if(existed) {
+    					break;
+    				}
+    				if(c_objects_names.get(x).equals(obj)) {
+    					existed = true;
+    				}
+    			}
+    			for(int y = 0; y < asm_objects_names.size(); y++) {
+    				if(existed) {
+    					break;
+    				}
+    				if(asm_objects_names.get(y).equals(obj)) {
+    					existed = true;
+    				}
+    			}
+    			for(int u = 0; u < rust_objects_names.size(); u++) {
+    				if(existed) {
+    					break;
+    				}
+    				if(rust_objects_names.get(u).equals(obj)) {
+    					existed = true;
+    				}
+    			}
+    			for(int d = 0; d < ld_objects_names.size(); d++) {
+    				if(existed) {
+    					break;
+    				}
+    				if(ld_objects_names.get(d).equals(obj)) {
+    					existed = true;
+    				}
+    			}
+    			
+    			if(!existed) {
+    				String error = obj.replace("\n", "");
+    				System.out.print(RED + "\nsForge Error : Undefined object -- > " + BLUE + error + RESET);
+    				System.exit(0);
+    			}
+    			
     		} catch (Exception e) {
-    			System.out.println(RED + "sForge Java Error : " + e + RESET);
+    			String error = g.replace("\n", "");
+    			System.out.print(RED + "\nsForge Error : Error retrieving object name -- > " + BLUE + error + RESET);
+    			System.exit(0);
+    		}
+    		
+    		try {
+    			func = g.substring(g.indexOf(".") + 1, g.lastIndexOf(")") + 1);
+    		} catch(Exception e) {
+    			String error = g.replace("\n", "");
+    			System.out.print(RED + "\nsForge Error : Error retrieving function -- > " + BLUE + error + RESET);
+    			System.exit(0);
     		}
     		
     		int f = 0;
@@ -480,14 +533,15 @@ public class Main {
     					//System.out.println(c_command);
     					
     				} else {
-    					System.out.print(RED + "sForge Error : function -" + RESET);
-    					System.out.print(YELLOW + func + RESET);
-    					System.out.print(RED + "- is unknow ! \n" + RESET);
+    					System.out.print(RED + "\nsForge Error : Unknown function --> " + RESET);
+    					System.out.print(BLUE + func + RESET);
+    					System.exit(0);
     				}
     				
     				f += 1;
     				obj_verif.add("true");
     			} 
+    		
     		}
     		
     		if(f == 0) {
@@ -499,6 +553,8 @@ public class Main {
     			obj = obj.strip();
     			if(obj.equals(asm_objects_names.get(y))) {
     				if(func.startsWith("compile")) {
+    	    			nasm_command.clear();
+    					
     					String out = func.substring(func.indexOf("(") + 1, func.lastIndexOf(",")).strip();
     					String type = func.substring(func.indexOf(",") + 1, func.lastIndexOf(")")).strip();
     			
@@ -542,6 +598,7 @@ public class Main {
     				f += 1;
     				obj_verif.add("true");
     			}
+    		
     		}
     		
     		if(f == 0) {
@@ -553,6 +610,8 @@ public class Main {
     			obj = obj.strip();
     			if(obj.equals(rust_objects_names.get(u))) {
     				if(func.startsWith("compile")) {
+    					rs_command.clear();
+    					
     					String[] args = func.substring(func.indexOf("(") + 1, func.lastIndexOf(")")).split(",");
     					String out = "";
     					String std_ = "";
@@ -615,6 +674,7 @@ public class Main {
     				f += 1;
     				obj_verif.add("true");
     			}
+    			
     		}		
 
     		f = 0;
@@ -633,6 +693,8 @@ public class Main {
     		joan = joan.strip();
     		
     		if(joan.startsWith("ld")) {
+    			ld_command.clear();
+    			
     			String args = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));	
     			
     			ld_command.add("ld");

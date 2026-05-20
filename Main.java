@@ -2,6 +2,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.lang.ProcessBuilder;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 public class Main {
     public static final String  RED	   = "\u001B[31m";
@@ -10,6 +15,10 @@ public class Main {
     public static final String	GREEN  = "\u001B[32m";
     public static final String	YELLOW = "\u001B[33m";
     public static final String MAGENTA = "\u001B[35m";
+    
+    static int delay = 500;
+    
+    static String main_out = "";
 	
     static String project = "";
     static String objects = "";
@@ -69,6 +78,15 @@ public class Main {
     static boolean osdev = false;
    
     static ArrayList<String> obj_verif = new ArrayList<String>();
+    
+    
+    // Arraylist Commandes process builder
+    static ArrayList<String> c_command = new ArrayList<String>();
+    static ArrayList<String> rs_command = new ArrayList<String>();
+    static ArrayList<String> nasm_command = new ArrayList<String>();
+    static ArrayList<String> ld_command = new ArrayList<String>();
+    static ArrayList<String> obj_command = new ArrayList<String>();
+    static ArrayList<String> qemu_command = new ArrayList<String>();
     
 	public static void main(String[] args) {
 		int curs = 0;
@@ -393,9 +411,6 @@ public class Main {
     	
     	System.out.println();
     	
-		boolean c_verif = false;
-		boolean asm_verif = false;
-		boolean rs_verif = false;
     	
     	for(String g : all_commands) {
     		
@@ -419,23 +434,50 @@ public class Main {
     			obj = obj.strip();
     			if(obj.equals(c_objects_names.get(p))) {
     				if(func.startsWith("compile")) {
+    					c_command.clear();
+    					
     					String out = func.substring(func.indexOf("(") + 1, func.lastIndexOf(","));
     					String std_ = func.substring(func.indexOf(",") + 1, func.lastIndexOf(")"));
     					std_ = std_.strip();
     					
-    					System.out.print("\ngcc " + archtype);
+    					c_command.add("gcc");
+    					c_command.add(archtype);
+    					
     					if(osdev) {
-    						System.out.print(" -ffreestanding");
-    						System.out.print(" -fno-pie");
+    						c_command.add("-ffreestanding");
+    						c_command.add("-fno-pie");
     					}
     					if(std_.equals("no_std")) {
-    						System.out.print(" -nostdlib");
+    						c_command.add("-nostdlib");
     					}
-    					System.out.print(" -c " + c_objects_paths.get(p) + " -o ");
-    					System.out.print(c_objects_names.get(p) + "." + out + "\n");
+    					c_command.add("-c");
+    					c_command.add(c_objects_paths.get(p));
+    					c_command.add("-o");
+    					c_command.add(c_objects_names.get(p) + "." + out);
     					
     					c_objects_names_o.add(c_objects_names.get(p) + "." + out);
-    					c_verif = true;
+    					
+    					
+    					ProcessBuilder c_sub = new ProcessBuilder(c_command);
+    					c_sub.inheritIO();
+    					try {
+    						
+    						Process c_proc = c_sub.start(); 	
+    						
+    						try {
+    							TimeUnit.MILLISECONDS.sleep(delay);
+    						} catch (Exception e) {
+    							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    						}
+    						
+    						System.out.println(YELLOW + "sForge Sucess : GCC (C) --> " + BLUE + c_objects_names.get(p) + RESET);
+    						
+    					} catch(IOException ioe) {
+    						ioe.printStackTrace();
+    						
+    					}
+    					
+    					//System.out.println(c_command);
     					
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
@@ -459,17 +501,42 @@ public class Main {
     				if(func.startsWith("compile")) {
     					String out = func.substring(func.indexOf("(") + 1, func.lastIndexOf(",")).strip();
     					String type = func.substring(func.indexOf(",") + 1, func.lastIndexOf(")")).strip();
+    			
+    					nasm_command.add("nasm");
+    					nasm_command.add("-f");
+    					nasm_command.add(arch_type_asm);
+    					nasm_command.add(asm_objects_paths.get(y));
     					
-    					System.out.print("\nnasm -f " + arch_type_asm + " " + asm_objects_paths.get(y));
-    					System.out.print(" -o " + asm_objects_names.get(y) + "." + out + "\n");
+    					nasm_command.add("-o");
+    					nasm_command.add(asm_objects_names.get(y) + "." + out);
     					
     					asm_objects_names_o.add(asm_objects_names.get(y) + "." + out);
-    					asm_verif = true;
+    					
+    					//System.out.println(nasm_command);
 
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
     					System.out.print(YELLOW + func + RESET);
     					System.out.print(RED + "- is unknow ! \n");
+    				}
+    				
+    				ProcessBuilder nasm_sub = new ProcessBuilder(nasm_command);
+    				nasm_sub.inheritIO();
+    				
+    				try {
+    					
+    					Process nasm_proc = nasm_sub.start();
+    					
+    					try {
+    						TimeUnit.MILLISECONDS.sleep(delay);
+    					} catch (Exception e) {
+    						System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    					}
+    					
+    					System.out.println(YELLOW + "sForge Sucess : NASM (Assembly) --> " + BLUE + asm_objects_names.get(y) + RESET);
+    					
+    				} catch (IOException ioe){
+    					ioe.printStackTrace();
     				}
     				
     				f += 1;
@@ -504,12 +571,40 @@ public class Main {
     						no += 1;
     					}
     					
-    					System.out.print("\nrustc " + "--emit=obj " + "-C " + "panic=abort " + "-C " 
-    					+ "opt-level=3 " + "-C " + "overflow-checks=off " + "--target " + "i686-unknown-linux-gnu " 
-    							+ rust_objects_paths.get(u) + " -o " + rust_objects_names.get(u) + "." + out + "\n");
+    					rs_command.add("rustc");
+    					rs_command.add("--emit=obj");
+    					rs_command.add("-C");
+    					rs_command.add("panic=abort");
+    					rs_command.add("-C");
+    					rs_command.add("opt-level=3");
+    					rs_command.add("-C");
+    					rs_command.add("overflow-checks=off");
+    					rs_command.add("--target");
+    					rs_command.add("i686-unknown-linux-gnu");
+    					rs_command.add(rust_objects_paths.get(u));
+    					rs_command.add("-o");
+    					rs_command.add(rust_objects_names.get(u) + "." + out);
     					
     					rust_objects_names_o.add(rust_objects_names.get(u) + "." + out);
-    					rs_verif = true;
+   
+    					
+    					ProcessBuilder rs_sub = new ProcessBuilder(rs_command);
+    					rs_sub.inheritIO();
+    					
+    					try {
+    						Process rs_proc = rs_sub.start();
+    						
+    						try {
+    							TimeUnit.MILLISECONDS.sleep(delay);
+    						} catch(Exception e) {
+    							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    						}
+    						
+    						System.out.println(YELLOW + "sForge Sucess : CARGO (Rust) --> " + BLUE + rust_objects_names.get(u) + RESET);
+    						
+    					} catch (IOException ioe) {
+    						ioe.printStackTrace();
+    					}
     					
     				} else {
     					System.out.print(RED + "sForge Error : function -" + RESET);
@@ -540,19 +635,48 @@ public class Main {
     		if(joan.startsWith("ld")) {
     			String args = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));	
     			
-    			System.out.print("\nld -m " + arch_type_ld + " -T ");
-    			System.out.print(ld_objects_paths.get(0) + " ");
+    			ld_command.add("ld");
+    			ld_command.add("-m");
+    			ld_command.add(arch_type_ld);
+    			ld_command.add("-T");
+    			ld_command.add(ld_objects_paths.get(0));
     			
     			for(int x = 0; x < asm_objects_names_o.size(); x++) {
-    				System.out.print(asm_objects_names_o.get(x) + " ");
+    				ld_command.add(asm_objects_names_o.get(x));
     			}
     			for(int x = 0; x < c_objects_names_o.size(); x++) {
-    				System.out.print(c_objects_names_o.get(x) + " ");
+    				ld_command.add(c_objects_names_o.get(x));
     			}
     			for(int x = 0; x < rust_objects_names_o.size(); x++) {
-    				System.out.print(rust_objects_names_o.get(x) + " ");
+    				ld_command.add(rust_objects_names_o.get(x));
     			}
-    			System.out.println("-o " + out_name + ".elf");
+    			
+    			ld_command.add("-o");
+    			ld_command.add(out_name + ".elf");
+    			
+    			
+    			ProcessBuilder ld_sub = new ProcessBuilder(ld_command);
+    			ld_sub.inheritIO();
+    			
+    			try {
+    				Process ld_proc = ld_sub.start();
+    				
+    				try {
+    					TimeUnit.MILLISECONDS.sleep(delay);
+    				} catch (Exception e) {
+    					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    				}
+    				
+    				System.out.println(YELLOW + "sForge Sucess : LD (link) --> " + BLUE + ld_objects_names.get(0) + RESET);
+    				
+    			} catch (IOException ioe){
+    				StringWriter sw = new StringWriter();
+    				PrintWriter pw = new PrintWriter(sw);
+    				ioe.printStackTrace(pw);
+    				
+    				String out = pw.toString();
+    				System.out.println(out);
+    			}
     			
     			
     		}else if(joan.startsWith("trans")) {
@@ -564,8 +688,31 @@ public class Main {
     				m = "binary";
     			}
     			
-    			System.out.print("\nobjcopy -O " + m + " " + out_name + ".elf ");
-    			System.out.print(out_name + "." + out_type);
+    			obj_command.add("objcopy");
+    			obj_command.add("-O");
+    			obj_command.add(m);
+    			obj_command.add(out_name + ".elf");
+    			obj_command.add(out_name + "." + out_type);
+    			
+    			main_out = out_name + "." + out_type;
+    			
+    			ProcessBuilder ob_sub = new ProcessBuilder(obj_command);
+    			ob_sub.inheritIO();
+    			
+    			try {
+    				Process ob_proc = ob_sub.start();
+    				
+    				try {
+    					TimeUnit.MILLISECONDS.sleep(delay);
+    				} catch (Exception e) {
+    					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    				}
+    				
+    				System.out.println(YELLOW + "sForge Sucess : OBJCOPY --> " + BLUE + out_type + RESET);
+    				
+    			} catch (IOException ioe) {
+    				ioe.printStackTrace();
+    			}
     			
     		} else {
     			System.out.println(RED + "sForge Error : unknow function here ->" + YELLOW + joan.strip() + RED + "<-" + RESET);
@@ -582,13 +729,30 @@ public class Main {
     	
     	for(String r : all_instrs) {
     		r = r.strip();
-    		System.out.println(r);
-    		
     		if(r.startsWith("qemu")) {
-    			System.out.println("gkduygekugd");
+    			qemu_command.add("qemu-system-" + arch);
+    			qemu_command.add("-drive");
+    			qemu_command.add("format=raw,file=" + main_out);
+    			
+    			ProcessBuilder q_sub = new ProcessBuilder(qemu_command);
+    			q_sub.inheritIO();
+    			
+    			try {
+    				Process q_proc = q_sub.start();
+    				
+    				try {
+    					TimeUnit.MILLISECONDS.sleep(delay);
+    				} catch(Exception e) {
+    					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    				}
+    				
+    				System.out.println(YELLOW + "sForge Sucess : QEMU" + RESET);
+    				
+    			} catch (IOException ioe) {
+    				ioe.printStackTrace();
+    			}
     		}
     	}
-    	
     	
     	run_analised = true;
     }

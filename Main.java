@@ -7,6 +7,12 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.FileInputStream;
 
 public class Main {
     public static final String  RED	   = "\u001B[31m";
@@ -16,9 +22,10 @@ public class Main {
     public static final String	YELLOW = "\u001B[33m";
     public static final String MAGENTA = "\u001B[35m";
     
-    static int delay = 500;
+    static int delay = 50;
     
     static String main_out = "";
+    static String path;
 	
     static String project = "";
     static String objects = "";
@@ -36,6 +43,8 @@ public class Main {
 	static String arch_type_asm;
 	static String arch_type_ld;
 	static String out_name;
+	static String project_path;
+	static String branchname;
 	
 	//Objects Data
 	static ArrayList<String> c_objects_names = new ArrayList<String>();
@@ -68,6 +77,7 @@ public class Main {
     static boolean comp_analised = false;
     static boolean link_analised = false;
     static boolean run_analised = false;
+    static boolean env_set = false;
     
     static boolean project_session = true;
     static boolean objects_session = true;
@@ -108,6 +118,9 @@ public class Main {
     					} else if(is_parts_cut) {
     						if(!project_analised) {
     							project_analyse();
+    						}
+    						if(!env_set) {
+    							env_setup();
     						}
     						if(!obj_analised) {
     							obj_analyse();
@@ -193,6 +206,7 @@ public class Main {
             			int start = data.indexOf(" ") + 1;
             			int end = data.lastIndexOf("{");
             			String branch_name = data.substring(start, end);
+            			branchname = branch_name;
             			System.out.println("Branch name : " + BLUE + branch_name + RESET);
             			is_find = true;
             		} else {
@@ -207,7 +221,6 @@ public class Main {
     
     static void def_parts() {
     	is_parts_cut = true;
-    	
     	boolean is_find = false;
     	
     	try(Scanner r = new Scanner(in)){
@@ -218,6 +231,7 @@ public class Main {
     			if(!is_a_comment(data)) {
     				if(data.startsWith("project") && !project_find) {
     					project_name = data.substring(data.indexOf(" ") + 1, data.lastIndexOf("{"));
+    					project_name = project_name.strip();
     					System.out.println("Project name : " + BLUE + project_name + RESET);
     					project_find = true; 
     					project_session = false;
@@ -336,6 +350,9 @@ public class Main {
         		} else if(value.equals("false")) {
         			osdev = false;
         		}
+        	}else if(instruction.startsWith("project_path")) {
+        		project_path = instruction.substring(instruction.indexOf("\'") + 1, instruction.lastIndexOf("'"));
+        		System.out.println("Project location : " + BLUE + project_path + RESET);
         	} else {
         		System.out.println(RED + "sForge Error : unknow element : -" + YELLOW + instruction + RED + "-" + RESET);
         		System.exit(0);
@@ -506,7 +523,7 @@ public class Main {
     					c_command.add("-c");
     					c_command.add(c_objects_paths.get(p));
     					c_command.add("-o");
-    					c_command.add(c_objects_names.get(p) + "." + out);
+    					c_command.add(path + c_objects_names.get(p) + "." + out);
     					
     					c_objects_names_o.add(c_objects_names.get(p) + "." + out);
     					
@@ -516,6 +533,15 @@ public class Main {
     					try {
     						
     						Process c_proc = c_sub.start(); 	
+    						
+    						try {
+    							int exitcode = c_proc.waitFor();
+    							if(exitcode != 0) {
+    								System.out.println("sForge GCC Error : " + exitcode);
+    							}
+    						} catch (Exception e) {
+    							System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+    						}
     						
     						try {
     							TimeUnit.MILLISECONDS.sleep(delay);
@@ -564,7 +590,7 @@ public class Main {
     					nasm_command.add(asm_objects_paths.get(y));
     					
     					nasm_command.add("-o");
-    					nasm_command.add(asm_objects_names.get(y) + "." + out);
+    					nasm_command.add(path + asm_objects_names.get(y) + "." + out);
     					
     					asm_objects_names_o.add(asm_objects_names.get(y) + "." + out);
     					
@@ -582,6 +608,16 @@ public class Main {
     				try {
     					
     					Process nasm_proc = nasm_sub.start();
+    					
+						try {
+							int exitcode = nasm_proc.waitFor();
+							if(exitcode != 0) {
+								System.out.println("sForge Nasm Error : " + exitcode);
+								System.exit(0);
+							}
+						} catch (Exception e) {
+							System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+						}
     					
     					try {
     						TimeUnit.MILLISECONDS.sleep(delay);
@@ -642,7 +678,7 @@ public class Main {
     					rs_command.add("i686-unknown-linux-gnu");
     					rs_command.add(rust_objects_paths.get(u));
     					rs_command.add("-o");
-    					rs_command.add(rust_objects_names.get(u) + "." + out);
+    					rs_command.add(path + rust_objects_names.get(u) + "." + out);
     					
     					rust_objects_names_o.add(rust_objects_names.get(u) + "." + out);
    
@@ -652,6 +688,16 @@ public class Main {
     					
     					try {
     						Process rs_proc = rs_sub.start();
+    						
+    						try {
+    							int exitcode = rs_proc.waitFor();
+    							if(exitcode != 0) {
+    								System.out.println("sForge Cargo Error : " + exitcode);
+    								System.exit(0);
+    							}
+    						} catch (Exception e) {
+    							System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+    						}
     						
     						try {
     							TimeUnit.MILLISECONDS.sleep(delay);
@@ -697,31 +743,56 @@ public class Main {
     			
     			String args = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));	
     			
+    			File source = new File(ld_objects_paths.get(0));
+    			File destination = new File(path + "/linker.ld");
+    			String link_path = path + "linker.ld";
+    			
+    			try {
+    				Path sourcePath = Paths.get(source.getAbsolutePath());
+        			OutputStream destinationStream = new FileOutputStream(destination);
+        			Files.copy(sourcePath, destinationStream);
+    			} catch (IOException e) {
+    				System.out.println("Erooooor");
+    			}
+    			
     			ld_command.add("ld");
     			ld_command.add("-m");
     			ld_command.add(arch_type_ld);
     			ld_command.add("-T");
-    			ld_command.add(ld_objects_paths.get(0));
+    			ld_command.add(link_path);
     			
     			for(int x = 0; x < asm_objects_names_o.size(); x++) {
-    				ld_command.add(asm_objects_names_o.get(x));
+    				ld_command.add(path + asm_objects_names_o.get(x).strip());
+    				System.out.println(path + asm_objects_names_o.get(x).strip());
     			}
     			for(int x = 0; x < c_objects_names_o.size(); x++) {
-    				ld_command.add(c_objects_names_o.get(x));
+    				ld_command.add(path + c_objects_names_o.get(x).strip());
     			}
     			for(int x = 0; x < rust_objects_names_o.size(); x++) {
-    				ld_command.add(rust_objects_names_o.get(x));
+    				ld_command.add(path + rust_objects_names_o.get(x).strip());
     			}
     			
     			ld_command.add("-o");
-    			ld_command.add(out_name + ".elf");
+    			ld_command.add(path + out_name + ".elf");
     			
+    			System.out.println(ld_command);
     			
     			ProcessBuilder ld_sub = new ProcessBuilder(ld_command);
+    			ld_sub.directory(new File(path));
     			ld_sub.inheritIO();
     			
     			try {
     				Process ld_proc = ld_sub.start();
+    				
+					try {
+						int exitcode = ld_proc.waitFor();
+						if(exitcode != 0) {
+							System.out.println("sForge Ld Error : " + exitcode);
+							System.exit(0);
+						}
+					} catch (Exception e) {
+						System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+					}
     				
     				try {
     					TimeUnit.MILLISECONDS.sleep(delay);
@@ -753,8 +824,8 @@ public class Main {
     			obj_command.add("objcopy");
     			obj_command.add("-O");
     			obj_command.add(m);
-    			obj_command.add(out_name + ".elf");
-    			obj_command.add(out_name + "." + out_type);
+    			obj_command.add(path + out_name + ".elf");
+    			obj_command.add(path + out_name + "." + out_type);
     			
     			main_out = out_name + "." + out_type;
     			
@@ -763,6 +834,16 @@ public class Main {
     			
     			try {
     				Process ob_proc = ob_sub.start();
+					
+    				try {
+						int exitcode = ob_proc.waitFor();
+						if(exitcode != 0) {
+							System.out.println("sForge Objcopy Error : " + exitcode);
+							System.exit(0);
+						}
+					} catch (Exception e) {
+						System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+					}
     				
     				try {
     					TimeUnit.MILLISECONDS.sleep(delay);
@@ -794,13 +875,23 @@ public class Main {
     		if(r.startsWith("qemu")) {
     			qemu_command.add("qemu-system-" + arch);
     			qemu_command.add("-drive");
-    			qemu_command.add("format=raw,file=" + main_out);
+    			qemu_command.add("format=raw,file=" + path + main_out);
     			
     			ProcessBuilder q_sub = new ProcessBuilder(qemu_command);
     			q_sub.inheritIO();
     			
     			try {
     				Process q_proc = q_sub.start();
+    				
+					try {
+						int exitcode = q_proc.waitFor();
+						if(exitcode != 0) {
+							System.out.println("sForge QEMU error : " + exitcode);
+							System.exit(0);
+						}
+					} catch (Exception e) {
+						System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+					}
     				
     				try {
     					TimeUnit.MILLISECONDS.sleep(delay);
@@ -817,5 +908,23 @@ public class Main {
     	}
     	
     	run_analised = true;
+    }
+    
+    static void env_setup() {
+    	String totalpath = project_path + "/" + project_name + "-" + branchname + "-sForge/env";
+    	totalpath = totalpath.strip();
+    	
+    	File sf_loc_env = new File(totalpath + "/lingot");
+    	
+    	path = totalpath + "/lingot/";
+    	path = path.strip();
+    	
+    	if(sf_loc_env.exists()) {
+    		
+    	} else {
+    		sf_loc_env.mkdirs();
+    	}
+    	
+    	env_set = true;
     }
 }

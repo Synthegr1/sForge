@@ -4,53 +4,42 @@ branch Main{
     
     // Def project specs
     project sOS {
-        //arch _[archtype];
-        // archtype can be : i386 or x86_64;
-        //out '[filename].bin';
-        //Exemples :
         arch _i386;
         out 'main';
         osdev = true;
+        project_path = '/home/gabrielrebillat/Downloads/sOS-main';
+        infos = false;
     }
 
     // Def objects (files) of the OS
     cat objects {
-        //[object_type] [object_name] = '/link/to/the/file';
-        // Object_type : asm, c, rs, ld, java, cp (C++), cs (C#)
-        // Exemples :
-        asm boot = '/home/gabrielrebillat/Downloads/sOS-main/os/boot.asm';
-        c kernel = '/home/gabrielrebillat/Downloads/sOS-main/os/kernel.c';
-        c util =c '/home/gabrielrebillat/Downloads/sOS-main/os/util.c';
-        rs math_rs = '/home/gabrielrebillat/Downloads/sOS-main/rust/maths.rs';
-        ld linker = '/home/gabrielrebillat/Downloads/sOS-main/os/linker.ld'; 
+        asm boot = '/home/gabrielrebillat/Downloads/sOS-main/os/boot.asm'; 
+        c kernel = '/home/gabrielrebillat/Downloads/sOS-main/os/kernel.c'; 
+        c math = '/home/gabrielrebillat/Downloads/sOS-main/os/math.c';
+        c util = '/home/gabrielrebillat/Downloads/sOS-main/os/util.c'; 
+        c shell = '/home/gabrielrebillat/Downloads/sOS-main/os/shell.c'; 
+        rs math_rs = '/home/gabrielrebillat/Downloads/sOS-main/rust/maths.rs'; 
+        ld linker = '/home/gabrielrebillat/Downloads/sOS-main/os/linker.ld';
     }
 
     // Compile objects
     forge compile {
-        //[object_name].compile([file_type_out], [arg]);
-        //file_type_out : o, elf... ; arg : boot, no_std, panic
-
-        //Exemples :
-        boot.compile(o, boot);
-        kernel.compile(o, no_std);
-        util.compile(o, no_std);
-        math_rs.compile(o, no_std, panic);
+		boot.compile(o, boot);
+		kernel.compile(o, no_std);
+		shell.compile(o, no_std);
+		util.compile(o, no_std);
+		math.compile(o, no_std);
+		math_rs.compile(o, no_std);
     }
 
     // Link linker.ld
     forge link {
-        //ld([ld_object_name], binary_type);
-        //binary_type : elf_i386...
-        //Exemples :
         ld(linker); 
         trans(bin);
     }
 
     // Run with qemu
-    forge run {
-        //qemu([arg], bin);
-        // arg : i386... ; bin : file.bin (main.bin)
-        // Exemple : 
+	    forge run {
         qemu();
     }
 }

@@ -86,6 +86,7 @@ public class Main {
     static boolean run_session = true;
     
     static boolean osdev = false;
+    static boolean infos = false;
    
     static ArrayList<String> obj_verif = new ArrayList<String>();
     
@@ -353,7 +354,14 @@ public class Main {
         	}else if(instruction.startsWith("project_path")) {
         		project_path = instruction.substring(instruction.indexOf("\'") + 1, instruction.lastIndexOf("'"));
         		System.out.println("Project location : " + BLUE + project_path + RESET);
-        	} else {
+        	}else if(instruction.startsWith("infos")){
+        		value = instruction.substring(instruction.indexOf("=") + 2, instruction.length());
+        		if(value.equals("true")) {
+        			infos = true;
+        		} else if(value.equals("false")) {
+        			infos = false;
+        		}
+        	}else {
         		System.out.println(RED + "sForge Error : unknow element : -" + YELLOW + instruction + RED + "-" + RESET);
         		System.exit(0);
         	}
@@ -549,7 +557,7 @@ public class Main {
     							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     						}
     						
-    						System.out.println(YELLOW + "sForge Sucess : GCC (C) --> " + BLUE + c_objects_names.get(p) + RESET);
+    						System.out.println(GREEN + "sForge Sucess :" + YELLOW + " GCC (C)" + GREEN + " --> " + BLUE + c_objects_names.get(p) + RESET);
     						
     					} catch(IOException ioe) {
     						ioe.printStackTrace();
@@ -625,7 +633,7 @@ public class Main {
     						System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     					}
     					
-    					System.out.println(YELLOW + "sForge Sucess : NASM (Assembly) --> " + BLUE + asm_objects_names.get(y) + RESET);
+    					System.out.println(GREEN + "sForge Sucess :" + YELLOW + " NASM (Assembly)" + GREEN + " --> " + BLUE + asm_objects_names.get(y) + RESET);
     					
     				} catch (IOException ioe){
     					ioe.printStackTrace();
@@ -705,7 +713,7 @@ public class Main {
     							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     						}
     						
-    						System.out.println(YELLOW + "sForge Sucess : CARGO (Rust) --> " + BLUE + rust_objects_names.get(u) + RESET);
+    						System.out.println(GREEN + "sForge Sucess :" + YELLOW + " CARGO (Rust)" + GREEN + " --> " + BLUE + rust_objects_names.get(u) + RESET);
     						
     					} catch (IOException ioe) {
     						ioe.printStackTrace();
@@ -763,7 +771,6 @@ public class Main {
     			
     			for(int x = 0; x < asm_objects_names_o.size(); x++) {
     				ld_command.add(path + asm_objects_names_o.get(x).strip());
-    				System.out.println(path + asm_objects_names_o.get(x).strip());
     			}
     			for(int x = 0; x < c_objects_names_o.size(); x++) {
     				ld_command.add(path + c_objects_names_o.get(x).strip());
@@ -774,12 +781,14 @@ public class Main {
     			
     			ld_command.add("-o");
     			ld_command.add(path + out_name + ".elf");
-    			
-    			System.out.println(ld_command);
+    
     			
     			ProcessBuilder ld_sub = new ProcessBuilder(ld_command);
     			ld_sub.directory(new File(path));
-    			ld_sub.inheritIO();
+    			
+    			if(infos) {
+    				ld_sub.inheritIO();
+    			}
     			
     			try {
     				Process ld_proc = ld_sub.start();
@@ -788,6 +797,7 @@ public class Main {
 						int exitcode = ld_proc.waitFor();
 						if(exitcode != 0) {
 							System.out.println("sForge Ld Error : " + exitcode);
+							
 							System.exit(0);
 						}
 					} catch (Exception e) {
@@ -800,7 +810,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(YELLOW + "sForge Sucess : LD (link) --> " + BLUE + ld_objects_names.get(0) + RESET);
+    				System.out.println(GREEN + "sForge Sucess :" + YELLOW + " LD (link)" + GREEN + " --> " + BLUE + ld_objects_names.get(0) + RESET);
     				
     			} catch (IOException ioe){
     				StringWriter sw = new StringWriter();
@@ -851,7 +861,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(YELLOW + "sForge Sucess : OBJCOPY --> " + BLUE + out_type + RESET);
+    				System.out.println(GREEN + "sForge Sucess :" + YELLOW + " OBJCOPY" + GREEN + " --> " + BLUE + out_type + RESET);
     				
     			} catch (IOException ioe) {
     				ioe.printStackTrace();
@@ -899,7 +909,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(YELLOW + "sForge Sucess : QEMU" + RESET);
+    				System.out.println(GREEN + "sForge Sucess : " + YELLOW + "QEMU" + RESET);
     				
     			} catch (IOException ioe) {
     				ioe.printStackTrace();

@@ -91,6 +91,7 @@ public class Main {
     
     static boolean osdev = false;
     static boolean infos = false;
+    static boolean print = true;
    
     static ArrayList<String> obj_verif = new ArrayList<String>();
     
@@ -198,15 +199,25 @@ public class Main {
 		}
 		else if(args[0].equals("build")){
 			
-			try {
-				in = new File(args[1]);
-			} catch(Exception e) {
-				System.out.println(RED + "sForge Error : need to specify the .forge file path !");
-				System.exit(0);
+			for(int i = 1; i < args.length; i++) {
+				if(args[i].startsWith("-")) {
+					String letter = args[i].substring(args[i].indexOf("-") + 1, args[i].length());
+					
+					if(letter.equals("i")) {
+						print = false;
+					}
+				} else {
+					try {
+						in = new File(args[i]);
+					} catch(Exception e) {
+						System.out.println(RED + "sForge Error : need to specify the .forge file path !");
+						System.exit(0);
+					}
+				}
 			}
 			
 			System.out.println("sForge v" + version + " -- BUILD " + args[1]);
-			System.out.println("");
+			if(print)System.out.println("");
 			
 			int curs = 0;
 			boolean is_branch_def = false;
@@ -228,20 +239,22 @@ public class Main {
 	    						if(!project_analised) {
 	    							project_analyse();
 	    						}
-	    						if(!env_set) {
-	    							env_setup();
-	    						}
-	    						if(!obj_analised) {
-	    							obj_analyse();
-	    						}
-	    						if(!comp_analised) {
-	    							comp_analyse();
-	    						}
-	    						if(!link_analised) {
-	    							link_analyse();
-	    						}
-	    						if(!run_analised) {
-	    							run_analyse();
+	    						if(osdev) {
+		    						if(!env_set) {
+		    							env_setup();
+		    						}
+		    						if(!obj_analised) {
+		    							obj_analyse();
+		    						}
+		    						if(!comp_analised) {
+		    							comp_analyse();
+		    						}
+		    						if(!link_analised) {
+		    							link_analyse();
+		    						}
+		    						if(!run_analised) {
+		    							run_analyse();
+		    						}
 	    						}
 	    					}
 	    				} else {
@@ -255,41 +268,41 @@ public class Main {
 			}
 	    	
 	    	int y = 0;
-	    	System.out.println();
+	    	if(print)System.out.println();
 	    	
 	    	if(compile_session) {
-	    		System.out.println(GREEN + "Compile section detected !" + RESET);
+	    		if(print)System.out.println(GREEN + "Compile section detected !" + RESET);
 	    		y += 1;
 	    	}
 	    	if(link_session) {
-	    		System.out.println(GREEN + "Link section detected !" + RESET);
+	    		if(print)System.out.println(GREEN + "Link section detected !" + RESET);
 	    		y += 1;
 	    	}
 	    	if(run_session) {
-	    		System.out.println(GREEN + "Run section detected !" + RESET);
+	    		if(print)System.out.println(GREEN + "Run section detected !" + RESET);
 	    		y += 1;
 	    	}
 	    	if(objects_session) {
-	    		System.out.println(GREEN + "Object section detected !" + RESET);
+	    		if(print)System.out.println(GREEN + "Object section detected !" + RESET);
 	    		y += 1;
 	    	}
 	    	if(project_session) {
-	    		System.out.println(GREEN + "Project section detected !" + RESET);
+	    		if(print)System.out.println(GREEN + "Project section detected !" + RESET);
 	    		y += 1;
 	    	}
 	    	
 	    	if(y == 5) {
-	    		System.out.println();
-	    		System.out.println(GREEN + "All section are find, complete success !" + RESET);
+	    		if(print)System.out.println();
+	    		if(print)System.out.println(GREEN + "All section are find, complete success !" + RESET);
 	    	} else if(y < 5) {
-	    		System.out.println();
-	    		System.out.println(RED + "Less one section !" + RESET);
+	    		if(print)System.out.println();
+	    		if(print)System.out.println(RED + "Less one section !" + RESET);
 	    	} else if(y > 5) {
-	    		System.out.println();
-	    		System.out.println(RED + "Add one section !" + RESET);
+	    		if(print)System.out.println();
+	    		if(print)System.out.println(RED + "Add one section !" + RESET);
 	    	} else {
-	    		System.out.println();
-	    		System.out.println(RED + "Error !" + RESET);
+	    		if(print)System.out.println();
+	    		if(print)System.out.println(RED + "Error !" + RESET);
 	    	}
 		}
 		
@@ -319,7 +332,7 @@ public class Main {
             			int end = data.lastIndexOf("{");
             			String branch_name = data.substring(start, end);
             			branchname = branch_name;
-            			System.out.println("Branch name : " + BLUE + branch_name + RESET);
+            			if(print)System.out.println("Branch name : " + BLUE + branch_name + RESET);
             			is_find = true;
             		} else {
             			
@@ -327,7 +340,7 @@ public class Main {
             	}
     		}
     	} catch (FileNotFoundException e) {
-    		System.out.println("Error");
+    		if(print)System.out.println("Error");
     	}
     }
     
@@ -344,7 +357,7 @@ public class Main {
     				if(data.startsWith("project") && !project_find) {
     					project_name = data.substring(data.indexOf(" ") + 1, data.lastIndexOf("{"));
     					project_name = project_name.strip();
-    					System.out.println("Project name : " + BLUE + project_name + RESET);
+    					if(print)System.out.println("Project name : " + BLUE + project_name + RESET);
     					project_find = true; 
     					project_session = false;
     				} else if(data.startsWith("cat")) {
@@ -443,7 +456,7 @@ public class Main {
     		
         	if(instruction.startsWith("arch")) {
         		arch = instruction.substring(instruction.indexOf("_") + 1, instruction.length());
-        		System.out.println("Architecture : " + BLUE + arch + RESET);
+        		if(print)System.out.println("Architecture : " + BLUE + arch + RESET);
         		if(arch.equals("x86_32")) {
         			archtype = "-m64";
         			arch_type_asm = "elf64";
@@ -454,7 +467,7 @@ public class Main {
         		}
         	}else if(instruction.startsWith("out")) {
         		out_name = instruction.substring(instruction.indexOf("\'") + 1, instruction.lastIndexOf("\'"));
-        		System.out.println("Out name = " + BLUE + out_name + RESET);
+        		if(print)System.out.println("Out name = " + BLUE + out_name + RESET);
         	} else if(instruction.startsWith("osdev")) {
         		value = instruction.substring(instruction.indexOf("=") + 2, instruction.length());
         		if(value.equals("true")) {
@@ -464,7 +477,7 @@ public class Main {
         		}
         	}else if(instruction.startsWith("project_path")) {
         		project_path = instruction.substring(instruction.indexOf("\'") + 1, instruction.lastIndexOf("'"));
-        		System.out.println("Project location : " + BLUE + project_path + RESET);
+        		if(print)System.out.println("Project location : " + BLUE + project_path + RESET);
         	}else if(instruction.startsWith("infos")){
         		value = instruction.substring(instruction.indexOf("=") + 2, instruction.length());
         		if(value.equals("true")) {
@@ -668,7 +681,7 @@ public class Main {
     							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     						}
     						
-    						System.out.println(GREEN + "sForge Sucess :" + YELLOW + " GCC (C)" + GREEN + " --> " + BLUE + c_objects_names.get(p) + RESET);
+    						if(print)System.out.println(GREEN + "sForge Sucess :" + YELLOW + " GCC (C)" + GREEN + " --> " + BLUE + c_objects_names.get(p) + RESET);
     						
     					} catch(IOException ioe) {
     						ioe.printStackTrace();
@@ -744,7 +757,7 @@ public class Main {
     						System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     					}
     					
-    					System.out.println(GREEN + "sForge Sucess :" + YELLOW + " NASM (Assembly)" + GREEN + " --> " + BLUE + asm_objects_names.get(y) + RESET);
+    					if(print)System.out.println(GREEN + "sForge Sucess :" + YELLOW + " NASM (Assembly)" + GREEN + " --> " + BLUE + asm_objects_names.get(y) + RESET);
     					
     				} catch (IOException ioe){
     					ioe.printStackTrace();
@@ -824,7 +837,7 @@ public class Main {
     							System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     						}
     						
-    						System.out.println(GREEN + "sForge Sucess :" + YELLOW + " CARGO (Rust)" + GREEN + " --> " + BLUE + rust_objects_names.get(u) + RESET);
+    						if(print)System.out.println(GREEN + "sForge Sucess :" + YELLOW + " CARGO (Rust)" + GREEN + " --> " + BLUE + rust_objects_names.get(u) + RESET);
     						
     					} catch (IOException ioe) {
     						ioe.printStackTrace();
@@ -921,7 +934,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(GREEN + "sForge Sucess :" + YELLOW + " LD (link)" + GREEN + " --> " + BLUE + ld_objects_names.get(0) + RESET);
+    				if(print)System.out.println(GREEN + "sForge Sucess :" + YELLOW + " LD (link)" + GREEN + " --> " + BLUE + ld_objects_names.get(0) + RESET);
     				
     			} catch (IOException ioe){
     				StringWriter sw = new StringWriter();
@@ -972,7 +985,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(GREEN + "sForge Sucess :" + YELLOW + " OBJCOPY" + GREEN + " --> " + BLUE + out_type + RESET);
+    				if(print)System.out.println(GREEN + "sForge Sucess :" + YELLOW + " OBJCOPY" + GREEN + " --> " + BLUE + out_type + RESET);
     				
     			} catch (IOException ioe) {
     				ioe.printStackTrace();
@@ -1020,7 +1033,7 @@ public class Main {
     					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
     				}
     				
-    				System.out.println(GREEN + "sForge Sucess : " + YELLOW + "QEMU" + RESET);
+    				if(print)System.out.println(GREEN + "sForge Sucess : " + YELLOW + "QEMU" + RESET);
     				
     			} catch (IOException ioe) {
     				ioe.printStackTrace();

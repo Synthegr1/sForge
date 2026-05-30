@@ -13,8 +13,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.BufferedReader;
 
 public class Main {
+	static double version;
+	
     public static final String  RED	   = "\u001B[31m";
     public static final String	RESET  = "\u001B[0m";
     public static final String  BLUE   = "\u001B[36m";
@@ -100,11 +104,61 @@ public class Main {
     static ArrayList<String> qemu_command = new ArrayList<String>();
     
     static ArrayList<String> update_command = new ArrayList<String>();
+    static ArrayList<String> git_command = new ArrayList<String>();
     
 	public static void main(String[] args) {
+		File t = new File("/home/gabrielrebillat/Downloads/sForge-main/temp/version");
+		t.delete();
+		
+		
+		git_command.add("wget");
+		git_command.add("-P");
+		git_command.add("/home/gabrielrebillat/Downloads/sForge-main/temp");
+		git_command.add("https://raw.githubusercontent.com/Synthegr1/sForge/refs/heads/main/src/version");
+		
+		ProcessBuilder ver_sub = new ProcessBuilder(git_command);
+		
+		try{
+			Process ver_proc = ver_sub.start();
+			
+			try {
+				int exitcode = ver_proc.waitFor();
+				if(exitcode != 0) {
+					System.out.println("sForge WGET - Update Error : " + exitcode);
+				}
+			} catch (Exception e) {
+				System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+			}
+			
+			try {
+				TimeUnit.MILLISECONDS.sleep(delay);
+			} catch (Exception e) {
+				System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+			}
+			
+			
+			try (BufferedReader br = new BufferedReader(new FileReader("/home/gabrielrebillat/Downloads/sForge-main/temp/version"))) {
+	            String line =  null;
+	            while ((line = br.readLine()) != null) {
+	                //System.out.println(line);
+	            	line = line.strip();
+		            if(line != null) {
+		            	double version_t = Double.parseDouble(line);
+			            version = version_t;
+		            }
+	            	continue;
+	            }
+	            
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+		}catch(Exception e) {
+			
+		}
+        
 		
 		if(args[0].equals("help")) {
-			System.out.println("sForge -- Help :");
+			System.out.println("sForge v" + version + " -- Help :");
 			System.out.println("	sforge + args");
 			System.out.println("		--> help : help page");
 			System.out.println("		--> filename.forge : run the FORGE file");
@@ -121,7 +175,7 @@ public class Main {
 				try {
 					int exitcode = update_proc.waitFor();
 					if(exitcode != 0) {
-						System.out.println("sForge GCC Error : " + exitcode);
+						System.out.println("sForge PYTHON - UPDATE Error : " + exitcode);
 					}
 				} catch (Exception e) {
 					System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
@@ -142,8 +196,17 @@ public class Main {
 			
 			System.out.println("Update infos :");
 		}
-		else {
-			in = new File(args[0]);
+		else if(args[0].equals("build")){
+			
+			try {
+				in = new File(args[1]);
+			} catch(Exception e) {
+				System.out.println(RED + "sForge Error : need to specify the .forge file path !");
+				System.exit(0);
+			}
+			
+			System.out.println("sForge v" + version + " -- BUILD " + args[1]);
+			System.out.println("");
 			
 			int curs = 0;
 			boolean is_branch_def = false;
@@ -229,6 +292,8 @@ public class Main {
 	    		System.out.println(RED + "Error !" + RESET);
 	    	}
 		}
+		
+		t.delete();
     }
     
     static boolean is_a_comment(String input) {

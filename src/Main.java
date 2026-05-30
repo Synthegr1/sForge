@@ -61,7 +61,7 @@ public class Main {
 	static ArrayList<String> asm_objects_names_o = new ArrayList<String>();
 	static ArrayList<String> rust_objects_names_o = new ArrayList<String>();
 	
-    static File in = new File("main.forge");
+    static File in;
     
     
     //  --Boolean--  //
@@ -99,90 +99,136 @@ public class Main {
     static ArrayList<String> obj_command = new ArrayList<String>();
     static ArrayList<String> qemu_command = new ArrayList<String>();
     
+    static ArrayList<String> update_command = new ArrayList<String>();
+    
 	public static void main(String[] args) {
-		int curs = 0;
-		boolean is_branch_def = false;
 		
-    	try (Scanner reader = new Scanner(in)) {
-    		while(reader.hasNextLine()) {
-    			curs = curs + 1;
-    			String data = reader.nextLine();
-    			
-    			//System.out.println(data);
-    			
-    			if(is_a_comment(data)) {
-    				continue;
-    			} else {
-    				if(is_branch_def) {
-    					if(!is_parts_cut) {
-    						def_parts();
-    					} else if(is_parts_cut) {
-    						if(!project_analised) {
-    							project_analyse();
-    						}
-    						if(!env_set) {
-    							env_setup();
-    						}
-    						if(!obj_analised) {
-    							obj_analyse();
-    						}
-    						if(!comp_analised) {
-    							comp_analyse();
-    						}
-    						if(!link_analised) {
-    							link_analyse();
-    						}
-    						if(!run_analised) {
-    							run_analyse();
-    						}
-    					}
-    				} else {
-    					def_branch();
-    					is_branch_def = true;
-    				}
-    			}
-    		} 
-    	}catch (FileNotFoundException e) {
-			System.out.println(RED + "File Not Found !" + RESET);
+		if(args[0].equals("help")) {
+			System.out.println("sForge -- Help :");
+			System.out.println("	sforge + args");
+			System.out.println("		--> help : help page");
+			System.out.println("		--> filename.forge : run the FORGE file");
+		} else if(args[0].equals("update")) {
+			update_command.add("python3");
+			update_command.add("/home/gabrielrebillat/Downloads/sForge-main/update.py");
+			
+			ProcessBuilder up_sub = new ProcessBuilder(update_command);
+			up_sub.inheritIO();
+			try {
+				
+				Process update_proc = up_sub.start(); 	
+				
+				try {
+					int exitcode = update_proc.waitFor();
+					if(exitcode != 0) {
+						System.out.println("sForge GCC Error : " + exitcode);
+					}
+				} catch (Exception e) {
+					System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+				}
+				
+				try {
+					TimeUnit.MILLISECONDS.sleep(delay);
+				} catch (Exception e) {
+					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+				}
+				
+				
+			} catch(IOException ioe) {
+				ioe.printStackTrace();
+				
+			}
+			
+			
+			System.out.println("Update infos :");
 		}
-    	
-    	int y = 0;
-    	System.out.println();
-    	
-    	if(compile_session) {
-    		System.out.println(GREEN + "Compile section detected !" + RESET);
-    		y += 1;
-    	}
-    	if(link_session) {
-    		System.out.println(GREEN + "Link section detected !" + RESET);
-    		y += 1;
-    	}
-    	if(run_session) {
-    		System.out.println(GREEN + "Run section detected !" + RESET);
-    		y += 1;
-    	}
-    	if(objects_session) {
-    		System.out.println(GREEN + "Object section detected !" + RESET);
-    		y += 1;
-    	}
-    	if(project_session) {
-    		System.out.println(GREEN + "Project section detected !" + RESET);
-    		y += 1;
-    	}
-    	
-    	if(y == 5) {
-    		System.out.println();
-    		System.out.println(GREEN + "All section are find, complete success !" + RESET);
-    	} else if(y < 5) {
-    		System.out.println();
-    		System.out.println(RED + "Less one section !" + RESET);
-    	} else if(y > 5) {
-    		System.out.println();
-    		System.out.println(RED + "Add one section !" + RESET);
-    	} else {
-    		System.out.println();
-    		System.out.println(RED + "Error !" + RESET);
-    	}
+		else {
+			in = new File(args[0]);
+			
+			int curs = 0;
+			boolean is_branch_def = false;
+			
+	    	try (Scanner reader = new Scanner(in)) {
+	    		while(reader.hasNextLine()) {
+	    			curs = curs + 1;
+	    			String data = reader.nextLine();
+	    			
+	    			//System.out.println(data);
+	    			
+	    			if(is_a_comment(data)) {
+	    				continue;
+	    			} else {
+	    				if(is_branch_def) {
+	    					if(!is_parts_cut) {
+	    						def_parts();
+	    					} else if(is_parts_cut) {
+	    						if(!project_analised) {
+	    							project_analyse();
+	    						}
+	    						if(!env_set) {
+	    							env_setup();
+	    						}
+	    						if(!obj_analised) {
+	    							obj_analyse();
+	    						}
+	    						if(!comp_analised) {
+	    							comp_analyse();
+	    						}
+	    						if(!link_analised) {
+	    							link_analyse();
+	    						}
+	    						if(!run_analised) {
+	    							run_analyse();
+	    						}
+	    					}
+	    				} else {
+	    					def_branch();
+	    					is_branch_def = true;
+	    				}
+	    			}
+	    		} 
+	    	}catch (FileNotFoundException e) {
+				System.out.println(RED + "File Not Found !" + RESET);
+			}
+	    	
+	    	int y = 0;
+	    	System.out.println();
+	    	
+	    	if(compile_session) {
+	    		System.out.println(GREEN + "Compile section detected !" + RESET);
+	    		y += 1;
+	    	}
+	    	if(link_session) {
+	    		System.out.println(GREEN + "Link section detected !" + RESET);
+	    		y += 1;
+	    	}
+	    	if(run_session) {
+	    		System.out.println(GREEN + "Run section detected !" + RESET);
+	    		y += 1;
+	    	}
+	    	if(objects_session) {
+	    		System.out.println(GREEN + "Object section detected !" + RESET);
+	    		y += 1;
+	    	}
+	    	if(project_session) {
+	    		System.out.println(GREEN + "Project section detected !" + RESET);
+	    		y += 1;
+	    	}
+	    	
+	    	if(y == 5) {
+	    		System.out.println();
+	    		System.out.println(GREEN + "All section are find, complete success !" + RESET);
+	    	} else if(y < 5) {
+	    		System.out.println();
+	    		System.out.println(RED + "Less one section !" + RESET);
+	    	} else if(y > 5) {
+	    		System.out.println();
+	    		System.out.println(RED + "Add one section !" + RESET);
+	    	} else {
+	    		System.out.println();
+	    		System.out.println(RED + "Error !" + RESET);
+	    	}
+		}
     }
     
     static boolean is_a_comment(String input) {

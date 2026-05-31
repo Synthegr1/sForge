@@ -107,7 +107,17 @@ public class Main {
     static ArrayList<String> update_command = new ArrayList<String>();
     static ArrayList<String> git_command = new ArrayList<String>();
     
+    static ArrayList<String> all_args = new ArrayList<String>();
+    
 	public static void main(String[] args) {
+		
+		all_args.add("build");
+		all_args.add("-i");
+		all_args.add("help");
+		all_args.add("update");
+		all_args.add("--version");
+		
+		
 		File t = new File("/home/gabrielrebillat/Downloads/sForge-main/temp/version");
 		t.delete();
 		
@@ -159,10 +169,17 @@ public class Main {
         
 		
 		if(args[0].equals("help")) {
-			System.out.println("sForge v" + version + " -- Help :");
+			
+			System.out.println("sForge 🪐 v" + version + " -- Help :");
 			System.out.println("	sforge + args");
-			System.out.println("		--> help : help page");
-			System.out.println("		--> filename.forge : run the FORGE file");
+			System.out.println("		--> " + YELLOW + "help " + RESET + ": help page");
+			System.out.println("		--> " + YELLOW + "build" + RESET);
+			System.out.println("			--> " + YELLOW + "-i " + RESET + ": don't print all sForge Compilations informations");
+			System.out.println("				--> " + BLUE + "filename.forge" + RESET);
+			System.out.println("			--> " + BLUE + "filename.forge" + RESET);
+			System.out.println("		--> " + YELLOW + "update" + RESET + ": update sForge");
+			System.out.println("			--> " + YELLOW + "-m " + RESET + ": massive update from github");
+			
 		} else if(args[0].equals("update")) {
 			update_command.add("python3");
 			update_command.add("/home/gabrielrebillat/Downloads/sForge-main/update.py");
@@ -197,7 +214,10 @@ public class Main {
 			
 			System.out.println("Update infos :");
 		}
-		else if(args[0].equals("build")){
+		else if(args[0].equals("--version")) {
+			System.out.println("sForge 🪐 version : " + YELLOW + version);
+		}
+		else if(args[0].equals("-build")){
 			
 			for(int i = 1; i < args.length; i++) {
 				if(args[i].startsWith("-")) {
@@ -216,98 +236,182 @@ public class Main {
 				}
 			}
 			
-			System.out.println("sForge v" + version + " -- BUILD " + args[1]);
-			if(print)System.out.println("");
+			pr();
 			
-			int curs = 0;
-			boolean is_branch_def = false;
+		} else if(args[0].equals("-clean")) {
+			System.out.println("sForge 🪐 v" + version + " -- CLEAN");
 			
-	    	try (Scanner reader = new Scanner(in)) {
-	    		while(reader.hasNextLine()) {
-	    			curs = curs + 1;
-	    			String data = reader.nextLine();
-	    			
-	    			//System.out.println(data);
-	    			
-	    			if(is_a_comment(data)) {
-	    				continue;
-	    			} else {
-	    				if(is_branch_def) {
-	    					if(!is_parts_cut) {
-	    						def_parts();
-	    					} else if(is_parts_cut) {
-	    						if(!project_analised) {
-	    							project_analyse();
-	    						}
-	    						if(osdev) {
-		    						if(!env_set) {
-		    							env_setup();
-		    						}
-		    						if(!obj_analised) {
-		    							obj_analyse();
-		    						}
-		    						if(!comp_analised) {
-		    							comp_analyse();
-		    						}
-		    						if(!link_analised) {
-		    							link_analyse();
-		    						}
-		    						if(!run_analised) {
-		    							run_analyse();
-		    						}
-	    						}
-	    					}
-	    				} else {
-	    					def_branch();
-	    					is_branch_def = true;
-	    				}
-	    			}
-	    		} 
-	    	}catch (FileNotFoundException e) {
-				System.out.println(RED + "File Not Found !" + RESET);
+			for(int i = 1; i < args.length; i++) {
+				if(args[i].startsWith("-")) {
+					String letter = args[i].substring(args[i].indexOf("-") + 1, args[i].length());
+					
+					print = false;
+					
+				} else {
+					try {
+						in = new File(args[i]);
+					} catch(Exception e) {
+						System.out.println(RED + "sForge Error : need to specify the .forge file path !");
+						System.exit(0);
+					}
+				}
 			}
-	    	
-	    	int y = 0;
-	    	if(print)System.out.println();
-	    	
-	    	if(compile_session) {
-	    		if(print)System.out.println(GREEN + "Compile section detected !" + RESET);
-	    		y += 1;
-	    	}
-	    	if(link_session) {
-	    		if(print)System.out.println(GREEN + "Link section detected !" + RESET);
-	    		y += 1;
-	    	}
-	    	if(run_session) {
-	    		if(print)System.out.println(GREEN + "Run section detected !" + RESET);
-	    		y += 1;
-	    	}
-	    	if(objects_session) {
-	    		if(print)System.out.println(GREEN + "Object section detected !" + RESET);
-	    		y += 1;
-	    	}
-	    	if(project_session) {
-	    		if(print)System.out.println(GREEN + "Project section detected !" + RESET);
-	    		y += 1;
-	    	}
-	    	
-	    	if(y == 5) {
-	    		if(print)System.out.println();
-	    		if(print)System.out.println(GREEN + "All section are find, complete success !" + RESET);
-	    	} else if(y < 5) {
-	    		if(print)System.out.println();
-	    		if(print)System.out.println(RED + "Less one section !" + RESET);
-	    	} else if(y > 5) {
-	    		if(print)System.out.println();
-	    		if(print)System.out.println(RED + "Add one section !" + RESET);
-	    	} else {
-	    		if(print)System.out.println();
-	    		if(print)System.out.println(RED + "Error !" + RESET);
-	    	}
+			
+			clean();
+			
+		}
+		else {
+			System.out.print(RED + "sForge error : Unknown argument --> " + YELLOW);
+			for(int i = 0; i < args.length; i++) {
+				for(int g = 0; g < all_args.size(); g++) {
+					if(!args[i].equals(all_args.get(g))) {
+						System.out.print(args[i]);
+						System.out.print("\n");
+						System.exit(0);
+					}
+				}
+			}
 		}
 		
 		t.delete();
     }
+	
+	
+	// ---- FUNCTIONS ---- //
+	
+	
+	
+	static void clean() {
+		int curs = 0;
+		boolean is_branch_def = false;
+		
+    	try (Scanner reader = new Scanner(in)) {
+    		while(reader.hasNextLine()) {
+    			curs = curs + 1;
+    			String data = reader.nextLine();
+    			
+    			//System.out.println(data);
+    			
+    			if(is_a_comment(data)) {
+    				continue;
+    			} else {
+    				if(is_branch_def) {
+    					if(!is_parts_cut) {
+    						def_parts();
+    					} else if(is_parts_cut) {
+    						if(!project_analised) {
+    							project_analyse();
+    							System.out.println(arch);
+    						}
+    					}
+    				} else {
+    					def_branch();
+    					is_branch_def = true;
+    				}
+    			}
+    		} 
+    	}catch (FileNotFoundException e) {
+			System.out.println(RED + "File Not Found --> " + RESET + YELLOW + in);
+			System.exit(0);
+		}
+    	
+    	String u = project_path + "/" + project_name + "-" + branchname + "-sForge/env/lingot";
+    	System.out.println(u);
+	}
+	
+	
+	// ------- //
+	
+	static void pr() {
+		System.out.println("sForge v" + version + " -- BUILD ");
+		if(print)System.out.println("");
+		
+		int curs = 0;
+		boolean is_branch_def = false;
+		
+    	try (Scanner reader = new Scanner(in)) {
+    		while(reader.hasNextLine()) {
+    			curs = curs + 1;
+    			String data = reader.nextLine();
+    			
+    			//System.out.println(data);
+    			
+    			if(is_a_comment(data)) {
+    				continue;
+    			} else {
+    				if(is_branch_def) {
+    					if(!is_parts_cut) {
+    						def_parts();
+    					} else if(is_parts_cut) {
+    						if(!project_analised) {
+    							project_analyse();
+    						}
+    						if(osdev) {
+	    						if(!env_set) {
+	    							env_setup();
+	    						}
+	    						if(!obj_analised) {
+	    							obj_analyse();
+	    						}
+	    						if(!comp_analised) {
+	    							comp_analyse();
+	    						}
+	    						if(!link_analised) {
+	    							link_analyse();
+	    						}
+	    						if(!run_analised) {
+	    							run_analyse();
+	    						}
+    						}
+    					}
+    				} else {
+    					def_branch();
+    					is_branch_def = true;
+    				}
+    			}
+    		} 
+    	}catch (FileNotFoundException e) {
+			System.out.println(RED + "File Not Found !" + RESET);
+		}
+    	
+    	int y = 0;
+    	if(print)System.out.println();
+    	
+    	if(compile_session) {
+    		if(print)System.out.println(GREEN + "Compile section detected !" + RESET);
+    		y += 1;
+    	}
+    	if(link_session) {
+    		if(print)System.out.println(GREEN + "Link section detected !" + RESET);
+    		y += 1;
+    	}
+    	if(run_session) {
+    		if(print)System.out.println(GREEN + "Run section detected !" + RESET);
+    		y += 1;
+    	}
+    	if(objects_session) {
+    		if(print)System.out.println(GREEN + "Object section detected !" + RESET);
+    		y += 1;
+    	}
+    	if(project_session) {
+    		if(print)System.out.println(GREEN + "Project section detected !" + RESET);
+    		y += 1;
+    	}
+    	
+    	if(y == 5) {
+    		if(print)System.out.println();
+    		if(print)System.out.println(GREEN + "All section are find, complete success !" + RESET);
+    	} else if(y < 5) {
+    		if(print)System.out.println();
+    		if(print)System.out.println(RED + "Less one section !" + RESET);
+    	} else if(y > 5) {
+    		if(print)System.out.println();
+    		if(print)System.out.println(RED + "Add one section !" + RESET);
+    	} else {
+    		if(print)System.out.println();
+    		if(print)System.out.println(RED + "Error !" + RESET);
+    	}
+	}
     
     static boolean is_a_comment(String input) {
     	String test = input.stripLeading();

@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -179,6 +178,7 @@ public class Main {
 			System.out.println("			--> " + BLUE + "filename.forge" + RESET);
 			System.out.println("		--> " + YELLOW + "update" + RESET + ": update sForge");
 			System.out.println("			--> " + YELLOW + "-m " + RESET + ": massive update from github");
+			System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
 			
 		} else if(args[0].equals("update")) {
 			update_command.add("python3");
@@ -217,7 +217,7 @@ public class Main {
 		else if(args[0].equals("--version")) {
 			System.out.println("sForge 🪐 version : " + YELLOW + version);
 		}
-		else if(args[0].equals("-build")){
+		else if(args[0].equals("build")){
 			
 			for(int i = 1; i < args.length; i++) {
 				if(args[i].startsWith("-")) {
@@ -238,14 +238,15 @@ public class Main {
 			
 			pr();
 			
-		} else if(args[0].equals("-clean")) {
+		} else if(args[0].equals("clean")) {
 			System.out.println("sForge 🪐 v" + version + " -- CLEAN");
+			print = false;
 			
 			for(int i = 1; i < args.length; i++) {
 				if(args[i].startsWith("-")) {
 					String letter = args[i].substring(args[i].indexOf("-") + 1, args[i].length());
 					
-					print = false;
+					
 					
 				} else {
 					try {
@@ -258,6 +259,9 @@ public class Main {
 			}
 			
 			clean();
+			
+		}
+		else if(args[0].startsWith("test")) {
 			
 		}
 		else {
@@ -303,6 +307,10 @@ public class Main {
     							project_analyse();
     							System.out.println(arch);
     						}
+    						if(!obj_analised) obj_analyse();
+    						if(!comp_analised) {
+    							comp_analyse();
+    						}
     					}
     				} else {
     					def_branch();
@@ -315,8 +323,60 @@ public class Main {
 			System.exit(0);
 		}
     	
-    	String u = project_path + "/" + project_name + "-" + branchname + "-sForge/env/lingot";
+    	String u = project_path + "/" + project_name + "-" + branchname + "-sForge/env/lingot/";
+    	System.out.println(RED + "Removing : ");
     	System.out.println(u);
+    	
+    	for(int y = 0; y < asm_objects_names_o.size(); y++) {
+    		File in = new File(u + asm_objects_names_o.get(y));
+    		System.out.println(u + asm_objects_names_o.get(y));
+    		in.delete();
+    		
+    		try {
+    			TimeUnit.MILLISECONDS.sleep(500);
+    		} catch (Exception e) {
+    			System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    		}
+    		
+    	}
+    	
+    	for(int y = 0; y < c_objects_names_o.size(); y++) {
+    		File in = new File(u + c_objects_names_o.get(y));
+    		System.out.println(u + c_objects_names_o.get(y));
+    		
+    			in.delete();
+    		try {
+    			TimeUnit.MILLISECONDS.sleep(500);
+    		} catch (Exception e) {
+    			System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    		}
+    		
+    	}
+    	
+    	for(int y = 0; y < rust_objects_names_o.size(); y++) {
+    		File in = new File(u + rust_objects_names_o.get(y));
+    		System.out.println(u + rust_objects_names_o.get(y));
+    		in.delete();
+    		
+    		try {
+    			TimeUnit.MILLISECONDS.sleep(500);
+    		} catch (Exception e) {
+    			System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    		}
+    		
+    	}
+    	for(int y = 0; y < ld_objects_names.size(); y++) {
+    		File in = new File(u + ld_objects_names.get(y) + ".ld");
+    		System.out.println(u + ld_objects_names.get(y) + ".ld" + RESET);
+    		in.delete();
+    		
+    		try {
+    			TimeUnit.MILLISECONDS.sleep(500);
+    		} catch (Exception e) {
+    			System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+    		}
+    		
+    	}
 	}
 	
 	

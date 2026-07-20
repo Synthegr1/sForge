@@ -26,10 +26,11 @@ public class Main {
     public static final String MAGENTA = "\u001B[35m";
     
     static int delay = 50;
+	static String home = System.getProperty("user.home");
     
     static String main_out = "";
     static String path;
-	
+
     static String project = "";
     static String objects = "";
     static String compile = "";
@@ -46,7 +47,7 @@ public class Main {
 	static String arch_type_asm;
 	static String arch_type_ld;
 	static String out_name;
-	static String project_path;
+	static String project_path = ".";
 	static String branchname;
 	
 	//Objects Data
@@ -91,7 +92,7 @@ public class Main {
     static boolean osdev = false;
     static boolean infos = false;
     static boolean print = true;
-   
+	
     static ArrayList<String> obj_verif = new ArrayList<String>();
     
     
@@ -117,13 +118,18 @@ public class Main {
 		all_args.add("--version");
 		
 		
-		File t = new File("/home/gabrielrebillat/Downloads/sForge-main/temp/version");
+		File t = new File(home + "/sForge/temp/version");
 		t.delete();
-		
+
+		File tempDir = new File(home + "/sForge/temp");
+		if (!tempDir.exists()) {
+			tempDir.mkdirs();
+		}
+	
 		
 		git_command.add("wget");
 		git_command.add("-P");
-		git_command.add("/home/gabrielrebillat/Downloads/sForge-main/temp");
+		git_command.add(home + "/sForge/temp");
 		git_command.add("https://raw.githubusercontent.com/Synthegr1/sForge/refs/heads/main/src/version");
 		
 		ProcessBuilder ver_sub = new ProcessBuilder(git_command);
@@ -147,7 +153,7 @@ public class Main {
 			}
 			
 			
-			try (BufferedReader br = new BufferedReader(new FileReader("/home/gabrielrebillat/Downloads/sForge-main/temp/version"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader(home + "/sForge/temp/version"))) {
 	            String line =  null;
 	            while ((line = br.readLine()) != null) {
 	                //System.out.println(line);
@@ -169,7 +175,7 @@ public class Main {
 		
 		if(args[0].equals("help")) {
 			
-			System.out.println("sForge 🪐 v" + version + " -- Help :");
+			System.out.println("sForge v" + version + " -- Help :");
 			System.out.println("	sforge + args");
 			System.out.println("		--> " + YELLOW + "help " + RESET + ": help page");
 			System.out.println("		--> " + YELLOW + "build" + RESET);
@@ -181,8 +187,7 @@ public class Main {
 			System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
 			
 		} else if(args[0].equals("update")) {
-			update_command.add("python3");
-			update_command.add("/home/gabrielrebillat/Downloads/sForge-main/update.py");
+			update_command.add(home + "/sForge/sforge-update.sh");
 			
 			ProcessBuilder up_sub = new ProcessBuilder(update_command);
 			up_sub.inheritIO();
@@ -215,7 +220,7 @@ public class Main {
 			System.out.println("Update infos :");
 		}
 		else if(args[0].equals("--version")) {
-			System.out.println("sForge 🪐 version : " + YELLOW + version);
+			System.out.println("sForge version : " + YELLOW + version);
 		}
 		else if(args[0].equals("build")){
 			
@@ -239,7 +244,7 @@ public class Main {
 			pr();
 			
 		} else if(args[0].equals("clean")) {
-			System.out.println("sForge 🪐 v" + version + " -- CLEAN");
+			System.out.println("sForge v" + version + " -- CLEAN");
 			print = false;
 			
 			for(int i = 1; i < args.length; i++) {
@@ -495,7 +500,7 @@ public class Main {
             			int start = data.indexOf(" ") + 1;
             			int end = data.lastIndexOf("{");
             			String branch_name = data.substring(start, end);
-            			branchname = branch_name;
+						branchname = branch_name.strip();
             			if(print)System.out.println("Branch name : " + BLUE + branch_name + RESET);
             			is_find = true;
             		} else {
@@ -1039,9 +1044,9 @@ public class Main {
     			
     			String args = joan.substring(joan.indexOf("(") + 1, joan.lastIndexOf(")"));	
     			
-    			File source = new File(ld_objects_paths.get(0));
-    			File destination = new File(path + "/linker.ld");
     			String link_path = path + "linker.ld";
+                File source = new File(ld_objects_paths.get(0));
+                File destination = new File(link_path);
     			
     			try {
     				Path sourcePath = Paths.get(source.getAbsolutePath());
@@ -1069,15 +1074,16 @@ public class Main {
     			
     			ld_command.add("-o");
     			ld_command.add(path + out_name + ".elf");
-    
+
+				//System.out.println(ld_command);
     			
     			ProcessBuilder ld_sub = new ProcessBuilder(ld_command);
-    			ld_sub.directory(new File(path));
+    			//ld_sub.directory(new File(path));
     			
     			if(infos) {
     				ld_sub.inheritIO();
     			}
-    			
+    			System.out.println("BAKDHDAJD");
     			try {
     				Process ld_proc = ld_sub.start();
     				
@@ -1175,6 +1181,8 @@ public class Main {
     			qemu_command.add("-drive");
     			qemu_command.add("format=raw,file=" + path + main_out);
     			
+				System.out.println(qemu_command);
+
     			ProcessBuilder q_sub = new ProcessBuilder(qemu_command);
     			q_sub.inheritIO();
     			

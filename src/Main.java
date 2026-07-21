@@ -106,6 +106,7 @@ public class Main {
     
     static ArrayList<String> update_command = new ArrayList<String>();
     static ArrayList<String> git_command = new ArrayList<String>();
+	static ArrayList<String> git_m_command = new ArrayList<>();
     
     static ArrayList<String> all_args = new ArrayList<String>();
     
@@ -187,37 +188,86 @@ public class Main {
 			System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
 			
 		} else if(args[0].equals("update")) {
-			update_command.add(home + "/sForge/sforge-update.sh");
-			
-			ProcessBuilder up_sub = new ProcessBuilder(update_command);
-			up_sub.inheritIO();
-			try {
-				
-				Process update_proc = up_sub.start(); 	
-				
-				try {
-					int exitcode = update_proc.waitFor();
-					if(exitcode != 0) {
-						System.out.println("sForge PYTHON - UPDATE Error : " + exitcode);
-					}
-				} catch (Exception e) {
-					System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+
+			boolean ism = false;
+
+			try{
+				if(args[1].equals("-m")){
+					ism = true;
 				}
-				
-				try {
-					TimeUnit.MILLISECONDS.sleep(delay);
-				} catch (Exception e) {
-					System.out.println(RED + "Java Error TimeUnit" + e + RESET);
-				}
-				
-				
-			} catch(IOException ioe) {
-				ioe.printStackTrace();
+			}catch(Exception e){
 				
 			}
-			
-			
-			System.out.println("Update infos :");
+
+			if(ism){
+				System.out.println("sForge - Update Last Version : ");
+
+				git_m_command.add("git");
+				git_m_command.add("clone");
+				git_m_command.add("https://github.com/Synthegr1/sForge.git");
+				git_m_command.add(home + "/sForge");
+
+				try{
+					File rep = new File(home + "/sForge");
+					//System.out.println(home + "/sForge");
+
+					ProcessBuilder gitm_sub = new ProcessBuilder(git_m_command);
+					gitm_sub.inheritIO();
+
+					try{
+						Process gitm_proc = gitm_sub.start();
+
+						try{
+							int exitcode = gitm_proc.waitFor();
+							if(exitcode != 0){
+								System.out.println("Update failed : GITHUB ERROR : " + exitcode);
+							}
+						}catch(Exception e){
+							System.out.println("Github Error" + e);
+						}
+
+					}catch(Exception e){
+						System.out.println("Github Error" + e);
+					}
+
+				} catch(Exception e){
+					e.printStackTrace();
+				}
+
+				System.out.println(git_m_command);
+			}else{
+				update_command.add(home + "/sForge/sforge-update.sh");
+				
+				ProcessBuilder up_sub = new ProcessBuilder(update_command);
+				up_sub.inheritIO();
+				try {
+					
+					Process update_proc = up_sub.start(); 	
+					
+					try {
+						int exitcode = update_proc.waitFor();
+						if(exitcode != 0) {
+							System.out.println("sForge PYTHON - UPDATE Error : " + exitcode);
+						}
+					} catch (Exception e) {
+						System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+					}
+					
+					try {
+						TimeUnit.MILLISECONDS.sleep(delay);
+					} catch (Exception e) {
+						System.out.println(RED + "Java Error TimeUnit" + e + RESET);
+					}
+					
+					
+				} catch(IOException ioe) {
+					ioe.printStackTrace();
+					
+				}
+				
+				
+				System.out.println("Update infos :");
+			}
 		}
 		else if(args[0].equals("--version")) {
 			System.out.println("sForge version : " + YELLOW + version);

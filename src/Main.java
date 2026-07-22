@@ -106,7 +106,9 @@ public class Main {
     
     static ArrayList<String> update_command = new ArrayList<String>();
     static ArrayList<String> git_command = new ArrayList<String>();
-	static ArrayList<String> git_m_command = new ArrayList<>();
+	static ArrayList<String> git_m_command = new ArrayList<String>();
+	static ArrayList<String> perm_cmd = new ArrayList<String>();
+	static ArrayList<String> init_cmd = new ArrayList<String>();
     
     static ArrayList<String> all_args = new ArrayList<String>();
     
@@ -173,20 +175,15 @@ public class Main {
 			
 		}
         
+		if(args.length == 0){
+			System.out.println("sForge - No Arguments");
+			System.out.println("You must insert a argument after \'sforge\'");
+			System.out.println("To see all available arguments, enter \'sforge help\'.");
+			System.exit(0);
+		}
 		
 		if(args[0].equals("help")) {
-			
-			System.out.println("sForge v" + version + " -- Help :");
-			System.out.println("	sforge + args");
-			System.out.println("		--> " + YELLOW + "help " + RESET + ": help page");
-			System.out.println("		--> " + YELLOW + "build" + RESET);
-			System.out.println("			--> " + YELLOW + "-i " + RESET + ": don't print all sForge Compilations informations");
-			System.out.println("				--> " + BLUE + "filename.forge" + RESET);
-			System.out.println("			--> " + BLUE + "filename.forge" + RESET);
-			System.out.println("		--> " + YELLOW + "update" + RESET + ": update sForge");
-			System.out.println("			--> " + YELLOW + "-m " + RESET + ": massive update from github");
-			System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
-			
+			help();
 		} else if(args[0].equals("update")) {
 
 			boolean ism = false;
@@ -272,6 +269,29 @@ public class Main {
 		else if(args[0].equals("--version")) {
 			System.out.println("sForge version : " + YELLOW + version);
 		}
+		else if(args[0].equals("-init")){
+			init_cmd.add("sudo");
+			init_cmd.add("chmod");
+			init_cmd.add("+x");
+			init_cmd.add(home + "/sForge/sforge-update.sh");
+
+			ProcessBuilder perm_sub = new ProcessBuilder(init_cmd);
+			perm_sub.inheritIO();
+
+			try{
+				Process perm_proc = perm_sub.start();
+				try {
+					int exitcode = perm_proc.waitFor();
+					if(exitcode != 0) {
+						System.out.println("sForge PYTHON - UPDATE Error : " + exitcode);
+					}
+				} catch (Exception e) {
+					System.out.println("sForge Java Error : .waitFor --> " + BLUE + e);
+				}
+			}catch(Exception e){
+				System.out.println("sForge Error : " + e);
+			}
+		}
 		else if(args[0].equals("build")){
 			
 			for(int i = 1; i < args.length; i++) {
@@ -316,7 +336,7 @@ public class Main {
 			clean();
 			
 		}
-		else if(args[0].startsWith("test")) {
+		else if(args[0].equals(null)) {
 			
 		}
 		else {
@@ -1283,4 +1303,19 @@ public class Main {
     	
     	env_set = true;
     }
+
+	static void help(){
+		System.out.println("sForge v" + version + " -- Help :");
+		System.out.println("	sforge + args");
+		System.out.println("		--> " + YELLOW + "help " + RESET + ": help page");
+		System.out.println("		--> " + YELLOW + "build" + RESET);
+		System.out.println("			--> " + YELLOW + "-i " + RESET + ": don't print all sForge Compilations informations");
+		System.out.println("				--> " + BLUE + "filename.forge" + RESET);
+		System.out.println("			--> " + BLUE + "filename.forge" + RESET);
+		System.out.println("		--> " + YELLOW + "update" + RESET + ": update sForge");
+		System.out.println("			--> " + YELLOW + "-m " + RESET + ": massive update from github");
+		System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
+		System.out.println("		--> " + YELLOW + "-init" + RESET + " : Adjusting permissions for script updates");
+	}
+
 }

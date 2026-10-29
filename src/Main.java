@@ -27,6 +27,7 @@ public class Main {
     
     static int delay = 50;
 	static String home = System.getProperty("user.home");
+	static String os = System.getProperty("os.name");
     
     static String main_out = "";
     static String path;
@@ -233,6 +234,7 @@ public class Main {
 
 				System.out.println(git_m_command);
 			}else{
+				System.out.println("sForge v" + version + " -- Local Update");
 				update_command.add(home + "/sForge/sforge-update.sh");
 				
 				ProcessBuilder up_sub = new ProcessBuilder(update_command);
@@ -259,15 +261,15 @@ public class Main {
 					
 				} catch(IOException ioe) {
 					ioe.printStackTrace();
-					
 				}
-				
-				
-				System.out.println("Update infos :");
 			}
 		}
 		else if(args[0].equals("--version")) {
 			System.out.println("sForge version : " + YELLOW + version);
+		}
+		else if(args[0].equals("sys")){
+			System.out.println("sForge v" + version + " -- System Informations :");
+			System.out.println("Operating System : " + os);
 		}
 		else if(args[0].equals("-init")){
 			init_cmd.add("sudo");
@@ -1153,7 +1155,7 @@ public class Main {
     			if(infos) {
     				ld_sub.inheritIO();
     			}
-    			System.out.println("BAKDHDAJD");
+    			
     			try {
     				Process ld_proc = ld_sub.start();
     				
@@ -1250,8 +1252,17 @@ public class Main {
     			qemu_command.add("qemu-system-" + arch);
     			qemu_command.add("-drive");
     			qemu_command.add("format=raw,file=" + path + main_out);
+
+				String args = r.substring(r.indexOf("(") + 1, r.lastIndexOf(")"));
     			
-				System.out.println(qemu_command);
+				if(args.startsWith("audio")){
+					qemu_command.add("-audiodev");
+					qemu_command.add("pa,id=snd0");
+					qemu_command.add("-machine");
+					qemu_command.add("pcspk-audiodev=snd0");
+				}
+
+				//System.out.println(qemu_command);
 
     			ProcessBuilder q_sub = new ProcessBuilder(qemu_command);
     			q_sub.inheritIO();
@@ -1309,13 +1320,16 @@ public class Main {
 		System.out.println("	sforge + args");
 		System.out.println("		--> " + YELLOW + "help " + RESET + ": help page");
 		System.out.println("		--> " + YELLOW + "build" + RESET);
+		System.out.println("			--> " + YELLOW + "[file].forge");
 		System.out.println("			--> " + YELLOW + "-i " + RESET + ": don't print all sForge Compilations informations");
-		System.out.println("				--> " + BLUE + "filename.forge" + RESET);
-		System.out.println("			--> " + BLUE + "filename.forge" + RESET);
+		System.out.println("				--> " + YELLOW + "[file].forge" + RESET);
+		System.out.println("		--> " + YELLOW + "clean" + RESET + " : delete all compiled file");
+		System.out.println("			--> " + YELLOW + "[file].forge" + RESET);
 		System.out.println("		--> " + YELLOW + "update" + RESET + ": update sForge");
 		System.out.println("			--> " + YELLOW + "-m " + RESET + ": massive update from github");
 		System.out.println("		--> " + YELLOW + "--version" + RESET + " : version info");
-		System.out.println("		--> " + YELLOW + "-init" + RESET + " : Adjusting permissions for script updates");
+		System.out.println("		--> " + YELLOW + "-init" + RESET + " : Adjusting permissions for script updates (need sudo)");
+		System.out.println("		--> " + YELLOW + "sys" + RESET + " : Get system informations");
 	}
 
 }
